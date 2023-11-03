@@ -1,1 +1,1 @@
-my first attempt using sqlachemy which kinda works but was abandoned very early.
+my first attempt using sqlachemy which kinda works but I am switching to SqlModel.
