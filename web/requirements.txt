@@ -1,0 +1,5 @@
+sqlmodel
+pyside6
+fastapi
+uvicorn
+aiosqlite

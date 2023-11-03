@@ -1,0 +1,1 @@
+my first attempt using sqlachemy which kinda works but was abandoned very early.

@@ -3,13 +3,13 @@ import socket
 #from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from fastapi import FastAPI, Depends
-from core.models.foundation import Base
-from core.models.existing_models import *
-from core.models.user_generated_models import *
-from core.models.existing_models import *
-from core.helpers import dynamic_model_generator
-from core.schemas.generator_schemas import SchemaGenSchema
-from core.schemas.info_schemas import TableUrlsResponse, TableUrls
+from dynamicdb.core.models.foundation import Base
+from dynamicdb.core.models.existing_models import *
+from dynamicdb.core.models.user_generated_models import *
+from dynamicdb.core.models.existing_models import *
+from dynamicdb.core.helpers import dynamic_model_generator
+from dynamicdb.core.schemas.generator_schemas import SchemaGenSchema
+from dynamicdb.core.schemas.info_schemas import TableUrlsResponse, TableUrls
 # Create an SQLAlchemy engine and session
 engine = create_async_engine(
     "sqlite+aiosqlite:///db4.sqlite3", connect_args={"check_same_thread": False}
