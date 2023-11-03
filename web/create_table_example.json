@@ -1,0 +1,78 @@
+{
+    "name": "string",
+    "all_columns": [
+        {
+            "name": "string",
+            "colum_type": "str",
+            "is_optional": true,
+            "column_field": {
+                "primary_key": true,
+                "max_length": 0,
+                "min_length": 0,
+                "unique": true,
+                "index": true,
+                "default_value": "string"
+            }
+        }
+    ],
+    "create_columns": [
+        {
+            "name": "string",
+            "colum_type": "str",
+            "is_optional": true,
+            "column_field": {
+                "primary_key": true,
+                "max_length": 0,
+                "min_length": 0,
+                "unique": true,
+                "index": true,
+                "default_value": "string"
+            }
+        }
+    ],
+    "read_columns": [
+        {
+            "name": "string",
+            "colum_type": "str",
+            "is_optional": true,
+            "column_field": {
+                "primary_key": true,
+                "max_length": 0,
+                "min_length": 0,
+                "unique": true,
+                "index": true,
+                "default_value": "string"
+            }
+        }
+    ],
+    "update_columns": [
+        {
+            "name": "string",
+            "colum_type": "str",
+            "is_optional": true,
+            "column_field": {
+                "primary_key": true,
+                "max_length": 0,
+                "min_length": 0,
+                "unique": true,
+                "index": true,
+                "default_value": "string"
+            }
+        }
+    ],
+    "delete_columns": [
+        {
+            "name": "string",
+            "colum_type": "str",
+            "is_optional": true,
+            "column_field": {
+                "primary_key": true,
+                "max_length": 0,
+                "min_length": 0,
+                "unique": true,
+                "index": true,
+                "default_value": "string"
+            }
+        }
+    ]
+}

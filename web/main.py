@@ -4,6 +4,7 @@ from fastapi.responses import RedirectResponse, FileResponse, Response, PlainTex
 from fastapi.exceptions import ResponseValidationError, HTTPException
 from sqlalchemy.ext.asyncio import create_async_engine
 from dynamicdb.core.models.user_models import SQLModel, UserBase, UserCreate, UserRead, User
+from dynamicdb.core.schemas.dynamic_generator_schemas import SqlModelGeneratorSchema
 import socket
 from sqlmodel import select
 
@@ -50,6 +51,10 @@ async def get_all_users(db: AsyncSession = Depends(get_db))->list[UserRead]:
     result = await db.execute(query)
     users = result.scalars().all()
     return users
+
+@app.post("/create_table")
+async def create_table(table_schema:SqlModelGeneratorSchema, db: AsyncSession = Depends(get_db))->SqlModelGeneratorSchema:
+    return table_schema
 
 
 if __name__ == "__main__":
