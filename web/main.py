@@ -12,8 +12,6 @@ DATABASE_URL = "sqlite+aiosqlite:///./data.db"
 connect_args = {"check_same_thread": False}
 engine = create_async_engine(DATABASE_URL, echo=True, connect_args=connect_args)
 
-
-
 app = FastAPI()
 
 async def get_db():
@@ -53,14 +51,7 @@ async def get_all_users(db: AsyncSession = Depends(get_db))->list[UserRead]:
     users = result.scalars().all()
     return users
 
-from pydantic import BaseModel
-class ExampleUser(BaseModel):
-    name:str
-    age:int
 
-example_user_sqlmodel = SQLModel.from_orm(ExampleUser(name="Tanner", age=34))
-
-print([example_user_sqlmodel])
 if __name__ == "__main__":
     import uvicorn
     host = socket.gethostname()
