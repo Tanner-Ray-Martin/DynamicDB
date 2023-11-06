@@ -1,13 +1,14 @@
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Depends, WebSocket
+import time
 from sqlmodel.ext.asyncio.session import AsyncSession
-from fastapi.responses import RedirectResponse, FileResponse, Response, PlainTextResponse, StreamingResponse
+from fastapi.responses import RedirectResponse, FileResponse, Response, PlainTextResponse, StreamingResponse, JSONResponse, HTMLResponse
 from fastapi.exceptions import ResponseValidationError, HTTPException
 from sqlalchemy.ext.asyncio import create_async_engine
 from dynamicdb.core.models.user_models import SQLModel, UserBase, UserCreate, UserRead, User
 from dynamicdb.core.schemas.dynamic_generator_schemas import SqlModelGeneratorSchema
 import socket
 from sqlmodel import select
-
+from typing import Any
 DATABASE_URL = "sqlite+aiosqlite:///./data.db"
 
 connect_args = {"check_same_thread": False}
@@ -24,25 +25,112 @@ async def get_db():
     finally:
         await db.close()
 
+
+def on_message(ws, message):
+    time.sleep(1)
+    print(f"Received message: {message}")
+    ws.send("Hello, WebSocket!")
+
+def on_error(ws, error):
+    print(f"Error: {error}")
+
+def on_close(ws, close_status_code, close_msg):
+    print("Closed")
+
+def on_open(ws):
+    ws.send("Hello, WebSocket!")
+
 @app.get("/")
 async def hell_world():
     return {"message": "Hello World"}
 
+@app.get("/getsocket", response_class=HTMLResponse)
+async def get_root():
+    return """
+    <html>
+    <head>
+        <title>WebSocket Example</title>
+    </head>
+    <body>
+        <h1>WebSocket Example</h1>
+        <input type="text" id="message" placeholder="Enter a message">
+        <button onclick="startWebSocket()">Start WebSocket</button>
+        <button onclick="sendMessage()">Send</button>
+        <div id="messages"></div>
+        <script>
+            var socket;
+            var messageInterval;
+
+            function startWebSocket() {
+                if (socket === undefined || socket.readyState === WebSocket.CLOSED) {
+                    socket = new WebSocket("ws://" + window.location.host + "/ws");
+
+                    socket.onopen = function (event) {
+                        document.getElementById("messages").innerHTML = "WebSocket connection opened";
+                        messageInterval = setInterval(sendAutoMessage, 3000); // Send a message every 3 seconds
+                    };
+
+                    socket.onmessage = function (event) {
+                        var messagesDiv = document.getElementById("messages");
+                        messagesDiv.innerHTML += "<p>Received: " + event.data + "</p>";
+                    };
+
+                    socket.onclose = function (event) {
+                        if (event.wasClean) {
+                            console.log("WebSocket closed cleanly, code=" + event.code + " reason=" + event.reason);
+                        } else {
+                            console.error("WebSocket connection died");
+                        }
+                        clearInterval(messageInterval);
+                    };
+
+                    socket.onerror = function (error) {
+                        console.error("WebSocket Error: " + error.message);
+                        clearInterval(messageInterval);
+                    };
+                }
+            }
+
+            function sendMessage() {
+                var messageInput = document.getElementById("message");
+                var message = messageInput.value;
+                if (socket.readyState === WebSocket.OPEN) {
+                    socket.send(message);
+                    messageInput.value = "";  // Clear the input field
+                }
+            }
+
+            function sendAutoMessage() {
+                if (socket.readyState === WebSocket.OPEN) {
+                    socket.send("Automated message");
+                }
+            }
+        </script>
+    </body>
+    </html>
+    """
+
+
 @app.post("/users/create")
 async def create_user(user:UserCreate, db: AsyncSession = Depends(get_db))->UserRead:
-    db_user = User.from_orm(user)
+    try:
+        db_user = User.from_orm(user)
+    except Exception as e:
+        print(e)
+        print([e])
+
     db.add(db_user)
     await db.commit()
     await db.refresh(db_user)
     return db_user
 
 @app.get("/users/{user_id}")
-async def get_user_by_id(user_id: int, db: AsyncSession = Depends(get_db))->UserRead:
+async def get_user_by_id(user_id: int, db: AsyncSession = Depends(get_db))->UserRead|Any:
     query = select(User).filter_by(id=user_id)
     result = await db.execute(query)
     user = result.scalars().first()
     if not user:
-        raise HTTPException(404, detail=f"No user with id: {user_id}")
+        return HTTPException(status_code=404, detail={"user_id":user_id, "error":"non existant entity"})
     return user
 
 @app.get("/users")
@@ -52,10 +140,20 @@ async def get_all_users(db: AsyncSession = Depends(get_db))->list[UserRead]:
     users = result.scalars().all()
     return users
 
+@app.post("/users/nonexistant/")
+async def non_existant(user_id:int, db: AsyncSession = Depends(get_db))->JSONResponse:
+    return JSONResponse({"error":"Non Existant Etity", "entity_values":{"user_id":user_id}})
+
 @app.post("/create_table")
 async def create_table(table_schema:SqlModelGeneratorSchema, db: AsyncSession = Depends(get_db))->SqlModelGeneratorSchema:
     return table_schema
 
+@app.websocket("/ws")
+async def websocket_endpoint(websocket: WebSocket):
+    await websocket.accept()
+    while True:
+        data = await websocket.receive_text()
+        await websocket.send_text(f"Message text was: {data}")
 
 if __name__ == "__main__":
     import uvicorn
