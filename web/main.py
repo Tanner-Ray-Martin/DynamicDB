@@ -26,26 +26,26 @@ async def get_db():
         await db.close()
 
 
-def on_message(ws, message):
+def on_message(ws:WebSocket, message):
     time.sleep(1)
     print(f"Received message: {message}")
     ws.send("Hello, WebSocket!")
 
-def on_error(ws, error):
+def on_error(ws:WebSocket, error):
     print(f"Error: {error}")
 
-def on_close(ws, close_status_code, close_msg):
+def on_close(ws:WebSocket, close_status_code, close_msg):
     print("Closed")
 
-def on_open(ws):
+def on_open(ws:WebSocket):
     ws.send("Hello, WebSocket!")
 
 @app.get("/")
-async def hell_world():
+async def hello_world():
     return {"message": "Hello World"}
 
 @app.get("/getsocket", response_class=HTMLResponse)
-async def get_root():
+async def get_websocket_html():
     return """
     <html>
     <head>
@@ -125,12 +125,12 @@ async def create_user(user:UserCreate, db: AsyncSession = Depends(get_db))->User
     return db_user
 
 @app.get("/users/{user_id}")
-async def get_user_by_id(user_id: int, db: AsyncSession = Depends(get_db))->UserRead|Any:
+async def get_user_by_id(user_id: int, db: AsyncSession = Depends(get_db))->UserRead:
     query = select(User).filter_by(id=user_id)
     result = await db.execute(query)
     user = result.scalars().first()
     if not user:
-        return HTTPException(status_code=404, detail={"user_id":user_id, "error":"non existant entity"})
+        return JSONResponse({"error":"Non Existant Etity", "entity_values":{"user_id":user_id}})
     return user
 
 @app.get("/users")
@@ -139,10 +139,6 @@ async def get_all_users(db: AsyncSession = Depends(get_db))->list[UserRead]:
     result = await db.execute(query)
     users = result.scalars().all()
     return users
-
-@app.post("/users/nonexistant/")
-async def non_existant(user_id:int, db: AsyncSession = Depends(get_db))->JSONResponse:
-    return JSONResponse({"error":"Non Existant Etity", "entity_values":{"user_id":user_id}})
 
 @app.post("/create_table")
 async def create_table(table_schema:SqlModelGeneratorSchema, db: AsyncSession = Depends(get_db))->SqlModelGeneratorSchema:
